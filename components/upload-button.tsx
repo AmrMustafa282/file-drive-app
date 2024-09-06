@@ -28,6 +28,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { Spinner } from "./ui/Spinner";
+import { Doc } from "@/convex/_generated/dataModel";
 
 const formSchema = z.object({
  title: z.string().min(1).max(200),
@@ -71,10 +73,18 @@ export function UploadButton() {
 
      const { storageId } = await result.json();
 
+     const types = {
+      "image/png": "image",
+      "image/jpeg": "image",
+      "image/jpg": "image",
+      "application/pdf": "pdf",
+      "text/csv": "csv",
+     } as Record<string, Doc<"files">["type"]>;
      // Step 3: Save the newly allocated storage id to the database
      const newFile = await createFile({
       name: values.title,
       fileId: storageId,
+      type: types[values.file[0].type],
       orgId,
      });
 
@@ -139,7 +149,7 @@ export function UploadButton() {
          )}
         />
         <Button type="submit" disabled={isSubmitting} className="flex gap-2">
-         {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+         {isSubmitting && <Spinner />}
          Submit
         </Button>
        </form>
