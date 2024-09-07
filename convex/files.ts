@@ -3,6 +3,7 @@ import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { getUser } from "./users";
 import { fileTypes } from "./schema";
 import { Id } from "./_generated/dataModel";
+import { get } from "http";
 
 export const generateUploadUrl = mutation(async (ctx) => {
  const identity = await ctx.auth.getUserIdentity();
@@ -19,7 +20,8 @@ async function hasAccessToOrg(
 ) {
  const user = await getUser(ctx, tokenIdentifier);
  const hasAccess =
-  user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+  user.orgIds.some((item) => item.orgId === orgId) ||
+  user.tokenIdentifier.includes(orgId);
 
  return hasAccess;
 }
@@ -145,6 +147,10 @@ export const deleteFile = mutation({
    throw new ConvexError("you must be logged in to upload a file");
   }
 
+  const user = await getUser(ctx, identity.tokenIdentifier);
+  if (!user) {
+   throw new ConvexError("user not found");
+  }
   const file = await ctx.db.get(args.fileId);
   if (!file) {
    throw new ConvexError("file not found");
@@ -158,6 +164,18 @@ export const deleteFile = mutation({
 
   if (!hasAccess) {
    throw new ConvexError("you must be a member of the organization");
+  }
+
+  // this only work on orgs !!!!!
+  const isAdmin =
+   user.orgIds.find((org) => org.orgId === file.orgId)?.role === "admin" ||
+   file.orgId === identity.subject;
+  // console.log("user", user);
+  // console.log("identity", identity);
+  // console.log("orgids", user.orgIds);
+  // console.log("file", file);
+  if (!isAdmin) {
+   throw new ConvexError("you must be an admin to delete a file");
   }
   await ctx.db.delete(args.fileId);
  },

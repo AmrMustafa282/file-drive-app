@@ -42,6 +42,8 @@ import {
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { toast } from "sonner";
 import Image from "next/image";
+import { Protect } from "@clerk/nextjs";
+import { ConvexError } from "convex/values";
 
 function FileCardActions({
  file,
@@ -59,7 +61,7 @@ function FileCardActions({
      await deleteFile({ fileId: file._id });
      resolve("success");
     } catch (error) {
-     reject("error");
+     reject(error);
     }
    });
 
@@ -68,7 +70,17 @@ function FileCardActions({
    success: () => {
     return `File deleted successfully`;
    },
-   error: "Something went wrong",
+   error: (err) => {
+    if (err instanceof ConvexError) {
+     console.log(err.message);
+     return (
+      err.message.split("Uncaught ConvexError:")[1]?.trim().split("at")[0] ||
+      "An error occurred"
+     );
+    } else {
+     return "Something went wrong";
+    }
+   },
   });
  };
  const handleToggleFavorite = async (fileId: Id<"files">) => {
@@ -113,6 +125,7 @@ function FileCardActions({
      </Button>
     </DropdownMenuItem>
     <DropdownMenuItem asChild>
+     {/* <Protect role={"org:admin"} fallback={<></>}> */}
      <AlertDialog>
       <AlertDialogTrigger className="text-red-600 w-full">
        <Button
@@ -147,6 +160,7 @@ function FileCardActions({
        </AlertDialogFooter>
       </AlertDialogContent>
      </AlertDialog>
+     {/* </Protect> */}
     </DropdownMenuItem>
    </DropdownMenuContent>
   </DropdownMenu>
@@ -167,7 +181,7 @@ export function FileCard({
  } as Record<Doc<"files">["type"], ReactNode>;
  //  console.log(file);
 
- const isFavorite = favorites.some((f) => f.fileId === file._id);
+ const isFavorite = favorites?.some((f) => f.fileId === file._id);
  return (
   <Card>
    <CardHeader>

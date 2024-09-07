@@ -42,7 +42,7 @@ export function SearchBar({
    <Form {...form}>
     <form
      onSubmit={form.handleSubmit(onSubmit)}
-     className="flex gap-2 w-full justify-center"
+     className="flex gap-2 w-full justify-center items-center "
     >
      <FormField
       control={form.control}
