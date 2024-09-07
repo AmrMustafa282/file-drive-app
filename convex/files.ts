@@ -217,3 +217,34 @@ export const toggleFavorite = mutation({
   }
  },
 });
+export const getAllFavorites = query({
+ args: {
+  orgId: v.string(),
+ },
+
+ async handler(ctx, args) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+   throw new ConvexError("you must be logged in to upload a file");
+  }
+
+  // const hasAccess = await hasAccessToOrg(ctx, identity.tokenIdentifier);
+
+  // if (!hasAccess) {
+  //  return [];
+  // }
+
+  const user = await getUser(ctx, identity.tokenIdentifier);
+  if (!user) {
+   throw new ConvexError("user not found");
+  }
+
+  const favorites = await ctx.db
+   .query("fevorites")
+   .withIndex("by_userId_orgId_fileId", (q) =>
+    q.eq("userId", user._id).eq("orgId", args.orgId)
+   )
+   .collect();
+  return favorites;
+ },
+});

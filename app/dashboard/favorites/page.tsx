@@ -6,7 +6,7 @@ export default function page() {
  return (
   <div>
    {/* <h1 className="text-4xl font-bold">Your Fevorites</h1> */}
-   <FileBrowser title="Your Fevorites" favorite /> 
+   <FileBrowser title="Your Fevorites" favoritesOnly />
   </div>
  );
 }

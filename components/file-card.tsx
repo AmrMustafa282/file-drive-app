@@ -24,6 +24,7 @@ import {
  GanttChartIcon,
  ImageIcon,
  MoreVertical,
+ StarHalf,
  StarIcon,
  TextIcon,
  Trash2,
@@ -42,7 +43,13 @@ import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { toast } from "sonner";
 import Image from "next/image";
 
-function FileCardActions({ file }: { file: Doc<"files"> }) {
+function FileCardActions({
+ file,
+ isFavorite,
+}: {
+ file: Doc<"files">;
+ isFavorite: boolean;
+}) {
  const deleteFile = useMutation(api.files.deleteFile);
  const toggleFavorite = useMutation(api.files.toggleFavorite);
  const handleDeleteFile = async (fileId: string) => {
@@ -92,14 +99,24 @@ function FileCardActions({ file }: { file: Doc<"files"> }) {
        handleToggleFavorite(file._id);
       }}
      >
-      <StarIcon className="w-4 h-4" /> <span>Fevorite</span>
+      {isFavorite ? (
+       <>
+        <StarIcon className="w-4 h-4 text-yellow-600 fill-yellow-500 " />
+        <span>Unfevorite</span>
+       </>
+      ) : (
+       <>
+        <StarIcon className="w-4 h-4 " />
+        <span>Fevorite</span>
+       </>
+      )}
      </Button>
     </DropdownMenuItem>
     <DropdownMenuItem asChild>
      <AlertDialog>
-      <AlertDialogTrigger className="flex items-center   gap-2 text-red-600 w-full">
+      <AlertDialogTrigger className="text-red-600 w-full">
        <Button
-        className="w-full justify-start gap-1 "
+        className="w-full justify-start gap-1 px-2   "
         variant={"ghost"}
         size={"sm"}
        >
@@ -138,8 +155,10 @@ function FileCardActions({ file }: { file: Doc<"files"> }) {
 
 export function FileCard({
  file,
+ favorites,
 }: {
  file: Doc<"files"> & { url: string | null };
+ favorites: Doc<"fevorites">[];
 }) {
  const typeIcons = {
   image: <ImageIcon />,
@@ -147,6 +166,8 @@ export function FileCard({
   csv: <GanttChartIcon />,
  } as Record<Doc<"files">["type"], ReactNode>;
  //  console.log(file);
+
+ const isFavorite = favorites.some((f) => f.fileId === file._id);
  return (
   <Card>
    <CardHeader>
@@ -155,7 +176,7 @@ export function FileCard({
       <p>{typeIcons[file.type]}</p>
       <p>{file.name}</p>
      </div>
-     <FileCardActions file={file} />
+     <FileCardActions file={file} isFavorite={isFavorite} />
     </CardTitle>
     {/* <CardDescription>Deploy your new project in one-click.</CardDescription> */}
    </CardHeader>
