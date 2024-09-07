@@ -24,6 +24,7 @@ import {
  GanttChartIcon,
  ImageIcon,
  MoreVertical,
+ StarIcon,
  TextIcon,
  Trash2,
 } from "lucide-react";
@@ -43,6 +44,7 @@ import Image from "next/image";
 
 function FileCardActions({ file }: { file: Doc<"files"> }) {
  const deleteFile = useMutation(api.files.deleteFile);
+ const toggleFavorite = useMutation(api.files.toggleFavorite);
  const handleDeleteFile = async (fileId: string) => {
   const deleteFilePromise = () =>
    new Promise(async (resolve, reject) => {
@@ -62,6 +64,15 @@ function FileCardActions({ file }: { file: Doc<"files"> }) {
    error: "Something went wrong",
   });
  };
+ const handleToggleFavorite = async (fileId: Id<"files">) => {
+  try {
+   const res = await toggleFavorite({ fileId: file._id });
+   console.log(res);
+   toast.success(res.message);
+  } catch (error) {
+   toast.error("Something went wrong");
+  }
+ };
  return (
   <DropdownMenu>
    <DropdownMenuTrigger asChild>
@@ -73,9 +84,27 @@ function FileCardActions({ file }: { file: Doc<"files"> }) {
     <DropdownMenuLabel>Actions</DropdownMenuLabel>
     <DropdownMenuSeparator />
     <DropdownMenuItem asChild>
+     <Button
+      className="w-full justify-start gap-1 "
+      variant={"ghost"}
+      size={"sm"}
+      onClick={() => {
+       handleToggleFavorite(file._id);
+      }}
+     >
+      <StarIcon className="w-4 h-4" /> <span>Fevorite</span>
+     </Button>
+    </DropdownMenuItem>
+    <DropdownMenuItem asChild>
      <AlertDialog>
-      <AlertDialogTrigger className="flex items-center px-2  gap-2 text-red-600 w-full">
-       <Trash2 className="w-4 h-4" /> <span>Delete</span>
+      <AlertDialogTrigger className="flex items-center   gap-2 text-red-600 w-full">
+       <Button
+        className="w-full justify-start gap-1 "
+        variant={"ghost"}
+        size={"sm"}
+       >
+        <Trash2 className="w-4 h-4" /> <span>Delete</span>
+       </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
        <AlertDialogHeader>
@@ -117,7 +146,7 @@ export function FileCard({
   pdf: <FileTextIcon />,
   csv: <GanttChartIcon />,
  } as Record<Doc<"files">["type"], ReactNode>;
- console.log(file);
+ //  console.log(file);
  return (
   <Card>
    <CardHeader>
