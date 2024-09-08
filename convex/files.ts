@@ -52,12 +52,15 @@ export const createFile = mutation({
   if (!hasAccess) {
    throw new ConvexError("you must be a member of the organization");
   }
+  console.log("user");
+  const user = await getUser(ctx, identity.tokenIdentifier);
 
   await ctx.db.insert("files", {
    name: args.name,
    type: args.type,
    fileId: args.fileId,
    orgId: args.orgId,
+   userId: user._id,
   });
  },
 });
@@ -115,15 +118,25 @@ export const getFiles = query({
   }
 
   const filesWithUrl = await Promise.all(
-   files.map(async (file) => ({
-    ...file,
-    url: await ctx.storage.getUrl(file.fileId),
-   }))
+   files.map(async (file) => {
+    const user = await ctx.db
+     .query("users")
+     .withIndex("by_id", (q) => q.eq("_id", file.userId))
+     .first();
+    const userData = {
+     name: user?.name,
+     image: user?.image,
+    };
+
+    return {
+     ...file,
+     url: await ctx.storage.getUrl(file.fileId),
+     user: userData,
+    };
+   })
   );
 
-  // console.log("one", filesWithUrl[0]);
-  // console.log("two", files[0]);
-
+  // console.log(filesWithUrl);
   return filesWithUrl;
  },
 });

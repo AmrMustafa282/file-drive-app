@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
  Card,
@@ -44,17 +44,23 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { Protect } from "@clerk/nextjs";
 import { ConvexError } from "convex/values";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { formatRelative } from "date-fns";
 
 function FileCardActions({
  file,
  isFavorite,
 }: {
- file: Doc<"files"> & { url: string | null };
+ file: Doc<"files"> & {
+  url: string | null;
+  user: { name: string; image: string };
+ };
  isFavorite: boolean;
 }) {
  const deleteFile = useMutation(api.files.deleteFile);
  const restoreFile = useMutation(api.files.restoreFile);
  const toggleFavorite = useMutation(api.files.toggleFavorite);
+
  const handleDeleteFile = async (fileId: string) => {
   const deleteFilePromise = () =>
    new Promise(async (resolve, reject) => {
@@ -245,7 +251,11 @@ export function FileCard({
  file,
  favorites,
 }: {
- file: Doc<"files"> & { url: string | null };
+ file: Doc<"files"> & {
+  url: string | null;
+  user: { name: string; image: string };
+ };
+
  favorites: Doc<"fevorites">[];
 }) {
  const typeIcons = {
@@ -275,7 +285,15 @@ export function FileCard({
     {file.type === "csv" && <GanttChartIcon className="w-20 h-20" />}
     {file.type === "pdf" && <FileTextIcon className="w-20 h-20" />}
    </CardContent>
-   <CardFooter className="flex justify-center">by amr</CardFooter>
+   <CardFooter className=" text-gray-500 text-sm gap-2  ">
+    <Avatar>
+     <AvatarImage src={file.user.image} alt={file.user.name} />
+    </Avatar>
+    <div>
+     <p>{file.user.name}</p>
+     {formatRelative(new Date(file._creationTime), new Date())}
+    </div>
+   </CardFooter>
   </Card>
  );
 }

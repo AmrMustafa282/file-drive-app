@@ -13,7 +13,7 @@ import { useState } from "react";
 
 function PlacHolder() {
  return (
-  <div className=" flex flex-col gap-4 h-[30vh] col-span-3 mt-12 relative ">
+  <div className=" flex flex-col gap-4 h-[30vh] col-span-4 mt-12 relative ">
    <Image alt="empty-image" fill src={"/empty.svg"} />
    <p className=" text-2xl w-full text-center absolute -bottom-32 left-[50%] -translate-x-[50%] ">
     <p className="mb-6">You have no files, go ahead and upload one now</p>
@@ -59,10 +59,10 @@ export default function FileBrowser({
     </div>
    )}
 
-   <div className="grid grid-cols-3 gap-4 w-full  ">
+   <div className="grid grid-cols-4 gap-4 w-full  ">
     {!isLoading && (
      <>
-      <div className="col-span-3 flex justify-between items-center mb-8 ">
+      <div className="col-span-4 flex justify-between items-center mb-8 ">
        <h1 className="text-4xl font-bold">{title}</h1>
        <SearchBar query={query} setQuery={setQuery} />
        <UploadButton />

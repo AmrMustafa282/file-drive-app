@@ -3,10 +3,10 @@ const nextConfig = {
  images: {
   remotePatterns: [
    {
-    // protocol: "https",
     hostname: "festive-gerbil-839.convex.cloud",
-    // port: "",
-    // pathname: "/my-bucket/**",
+   },
+   {
+    hostname: "img.clerk.com",
    },
   ],
  },

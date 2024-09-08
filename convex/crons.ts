@@ -5,7 +5,7 @@ const crons = cronJobs();
 
 crons.daily(
  "delete any old files marked for deletion",
- { hourUTC: 24, minuteUTC: 0 }, // Every day at 8:00am PST
+ { hourUTC: 23, minuteUTC: 0 }, // Every day at 8:00am PST
  internal.files.deleteAllFiles
 );
 
