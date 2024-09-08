@@ -20,6 +20,7 @@ import {
  DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import {
+ Download,
  FileTextIcon,
  FolderSync,
  GanttChartIcon,
@@ -48,7 +49,7 @@ function FileCardActions({
  file,
  isFavorite,
 }: {
- file: Doc<"files">;
+ file: Doc<"files"> & { url: string | null };
  isFavorite: boolean;
 }) {
  const deleteFile = useMutation(api.files.deleteFile);
@@ -151,6 +152,21 @@ function FileCardActions({
         <span>Fevorite</span>
        </>
       )}
+     </Button>
+    </DropdownMenuItem>
+    <DropdownMenuItem asChild>
+     <Button
+      className="w-full justify-start gap-1 "
+      variant={"ghost"}
+      size={"sm"}
+      onClick={() => {
+       if (file.url) {
+        window.open(file.url, "_blank");
+       }
+      }}
+     >
+      <Download className="w-4 h-4" />
+      <span>Download</span>
      </Button>
     </DropdownMenuItem>
     <DropdownMenuItem asChild>
@@ -259,17 +275,7 @@ export function FileCard({
     {file.type === "csv" && <GanttChartIcon className="w-20 h-20" />}
     {file.type === "pdf" && <FileTextIcon className="w-20 h-20" />}
    </CardContent>
-   <CardFooter className="flex justify-center">
-    <Button
-     onClick={() => {
-      if (file.url) {
-       window.open(file.url, "_blank");
-      }
-     }}
-    >
-     Download
-    </Button>
-   </CardFooter>
+   <CardFooter className="flex justify-center">by amr</CardFooter>
   </Card>
  );
 }
