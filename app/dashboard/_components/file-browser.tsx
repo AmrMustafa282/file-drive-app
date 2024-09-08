@@ -10,6 +10,11 @@ import Image from "next/image";
 import { Loader } from "@/components/ui/Loader";
 import { SearchBar } from "@/components/search-bar";
 import { useState } from "react";
+import { DataTable } from "@/components/file-table";
+import { columns } from "@/components/columns";
+import { Doc } from "@/convex/_generated/dataModel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Grid3X3, TableOfContents } from "lucide-react";
 
 function PlacHolder() {
  return (
@@ -51,29 +56,61 @@ export default function FileBrowser({
   orgId ? { orgId } : "skip"
  );
  const isLoading = files === undefined;
+ const modifiedFiles = files?.map((file) => ({
+  ...file,
+  isFavorite: favorites?.some((f) => f.fileId === file._id),
+ }));
+
  return (
   <div>
-   {isLoading && (
-    <div className="flex justify-center h-[80vh] items-center">
-     <Loader />
-    </div>
-   )}
-
    <div className="grid grid-cols-4 gap-4 w-full  ">
-    {!isLoading && (
-     <>
-      <div className="col-span-4 flex justify-between items-center mb-8 ">
-       <h1 className="text-4xl font-bold">{title}</h1>
-       <SearchBar query={query} setQuery={setQuery} />
-       <UploadButton />
-      </div>
-      {files?.length === 0 && <PlacHolder />}
-     </>
-    )}
+    <>
+     <div className="col-span-4 flex justify-between items-center mb-8 ">
+      <h1 className="text-4xl font-bold">{title}</h1>
+      <SearchBar query={query} setQuery={setQuery} />
+      <UploadButton />
+     </div>
 
-    {files?.map((file) => {
-     return <FileCard key={file._id} file={file} favorites={favorites || []} />;
-    })}
+     {files?.length === 0 && <PlacHolder />}
+     <Tabs defaultValue="grid" className="col-span-4">
+      <TabsList>
+       <TabsTrigger value="grid" className="gap-1">
+        <Grid3X3 />
+        <span>Grid</span>
+       </TabsTrigger>
+       <TabsTrigger value="table" className="gap-1">
+        <TableOfContents />
+        <span>Table</span>
+       </TabsTrigger>
+      </TabsList>
+      {isLoading && (
+       <div className="flex justify-center h-[80vh] items-center">
+        <Loader />
+       </div>
+      )}
+      <TabsContent value="grid">
+       <div className="grid grid-cols-4 gap-4">
+        {modifiedFiles?.map((file) => {
+         return (
+          <FileCard
+           key={file._id}
+           file={
+            file as Doc<"files"> & {
+             url: string | null;
+             user: { name: string; image: string };
+             isFavorite: boolean;
+            }
+           }
+          />
+         );
+        })}
+       </div>
+      </TabsContent>
+      <TabsContent value="table">
+       <DataTable columns={columns} data={modifiedFiles || []} />
+      </TabsContent>
+     </Tabs>
+    </>
    </div>
   </div>
  );
