@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileIcon, StarIcon } from "lucide-react";
 import Link from "next/link";
+import { SideNavbar } from "@/components/side-navbar";
 
 function PlacHolder() {
  return (
@@ -40,19 +41,8 @@ export default function Home() {
  const files = useQuery(api.files.getFiles, orgId ? { orgId, query } : "skip");
  const isLoading = files === undefined;
  return (
-  <main className="container mx-auto pt-12 flex gap-8   ">
-   <div className="w-40 flex flex-col gap-2">
-    <Link href={"/dashboard/files"}>
-     <Button variant={"ghost"} className="gap-2">
-      <FileIcon /> <span>All Files</span>
-     </Button>
-    </Link>
-    <Link href={"/dashboard/favorites"}>
-     <Button variant={"ghost"} className="gap-2">
-      <StarIcon /> <span>Fevorites</span>
-     </Button>
-    </Link>
-   </div>
+  <main className="container mx-auto pt-12 flex gap-8  ">
+   <SideNavbar />
    <div className="w-full">
     {isLoading && (
      <div className="flex justify-center h-[80vh] items-center">

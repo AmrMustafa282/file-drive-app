@@ -27,9 +27,11 @@ function PlacHolder() {
 export default function FileBrowser({
  title,
  favoritesOnly,
+ deletedOnly,
 }: {
  title: string;
  favoritesOnly?: boolean;
+ deletedOnly?: boolean;
 }) {
  const organization = useOrganization();
  const user = useUser();
@@ -42,7 +44,7 @@ export default function FileBrowser({
 
  const files = useQuery(
   api.files.getFiles,
-  orgId ? { orgId, query, favorite: favoritesOnly } : "skip"
+  orgId ? { orgId, query, favorite: favoritesOnly, deletedOnly } : "skip"
  );
  const favorites = useQuery(
   api.files.getAllFavorites,

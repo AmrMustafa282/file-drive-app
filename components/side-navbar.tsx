@@ -1,5 +1,5 @@
 "use client";
-import { FileIcon, StarIcon } from "lucide-react";
+import { FileIcon, StarIcon, Trash2 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { Button } from "./ui/button";
@@ -29,6 +29,16 @@ export function SideNavbar() {
      })}
     >
      <StarIcon /> <span>Fevorites</span>
+    </Button>
+   </Link>
+   <Link href={"/dashboard/trash"}>
+    <Button
+     variant={"ghost"}
+     className={clsx("justify-start gap-2 w-full", {
+      "bg-gray-200 ": pathname === "/dashboard/trash",
+     })}
+    >
+     <Trash2 /> <span>Trash</span>
     </Button>
    </Link>
   </div>

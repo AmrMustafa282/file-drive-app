@@ -21,12 +21,11 @@ import {
 } from "./ui/dropdown-menu";
 import {
  FileTextIcon,
+ FolderSync,
  GanttChartIcon,
  ImageIcon,
  MoreVertical,
- StarHalf,
  StarIcon,
- TextIcon,
  Trash2,
 } from "lucide-react";
 import {
@@ -53,6 +52,7 @@ function FileCardActions({
  isFavorite: boolean;
 }) {
  const deleteFile = useMutation(api.files.deleteFile);
+ const restoreFile = useMutation(api.files.restoreFile);
  const toggleFavorite = useMutation(api.files.toggleFavorite);
  const handleDeleteFile = async (fileId: string) => {
   const deleteFilePromise = () =>
@@ -68,7 +68,36 @@ function FileCardActions({
   toast.promise(deleteFilePromise, {
    loading: "Loading...",
    success: () => {
-    return `File deleted successfully`;
+    return `File marked for deletion, Your file will be deleted in 30 days`;
+   },
+   error: (err) => {
+    if (err instanceof ConvexError) {
+     console.log(err.message);
+     return (
+      err.message.split("Uncaught ConvexError:")[1]?.trim().split("at")[0] ||
+      "An error occurred"
+     );
+    } else {
+     return "Something went wrong";
+    }
+   },
+  });
+ };
+ const handleRestoreFile = async (fileId: string) => {
+  const restoreFilePromise = () =>
+   new Promise(async (resolve, reject) => {
+    try {
+     await restoreFile({ fileId: file._id });
+     resolve("success");
+    } catch (error) {
+     reject(error);
+    }
+   });
+
+  toast.promise(restoreFilePromise, {
+   loading: "Loading...",
+   success: () => {
+    return `File has been restored.`;
    },
    error: (err) => {
     if (err instanceof ConvexError) {
@@ -127,35 +156,64 @@ function FileCardActions({
     <DropdownMenuItem asChild>
      {/* <Protect role={"org:admin"} fallback={<></>}> */}
      <AlertDialog>
-      <AlertDialogTrigger className="text-red-600 w-full">
-       <Button
-        className="w-full justify-start gap-1 px-2   "
-        variant={"ghost"}
-        size={"sm"}
-       >
-        <Trash2 className="w-4 h-4" /> <span>Delete</span>
-       </Button>
+      <AlertDialogTrigger className="w-full">
+       {file.shouldDelete ? (
+        <Button
+         className="w-full justify-start gap-1 px-2  text-green-600 hover:text-green-500 "
+         variant={"ghost"}
+         size={"sm"}
+        >
+         <FolderSync className="w-4 h-4" /> <span>Restore</span>
+        </Button>
+       ) : (
+        <Button
+         className="w-full justify-start gap-1 px-2 text-red-600 hover:text-red-500 "
+         variant={"ghost"}
+         size={"sm"}
+        >
+         <Trash2 className="w-4 h-4" /> <span>Delete</span>
+        </Button>
+       )}
       </AlertDialogTrigger>
       <AlertDialogContent>
        <AlertDialogHeader>
         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
         <AlertDialogDescription>
-         This action cannot be undone. This will permanently delete your account
-         and remove your data from our servers.
+         {file.shouldDelete ? (
+          <span>
+           This action will restore the file to its original location.
+          </span>
+         ) : (
+          <span>
+           This action will mark the file for deletion, you can restore it
+           within 30 days or it will be permanently deleted.
+          </span>
+         )}
         </AlertDialogDescription>
        </AlertDialogHeader>
        <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
         <AlertDialogAction>
-         <Button
-          variant="destructive"
-          onClick={() => {
-           //  deleteFile({ fileId: file._id })
-           handleDeleteFile(file._id);
-          }}
-         >
-          Delete
-         </Button>
+         {file.shouldDelete ? (
+          <Button
+           variant={"outline"}
+           className="bg-green-600 hover:bg-green-500 text-white hover:text-white"
+           onClick={() => {
+            handleRestoreFile(file._id);
+           }}
+          >
+           Restore
+          </Button>
+         ) : (
+          <Button
+           variant="destructive"
+           onClick={() => {
+            handleDeleteFile(file._id);
+           }}
+          >
+           Delete
+          </Button>
+         )}
         </AlertDialogAction>
        </AlertDialogFooter>
       </AlertDialogContent>

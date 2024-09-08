@@ -1,9 +1,13 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
+import {
+ internalMutation,
+ mutation,
+ MutationCtx,
+ query,
+ QueryCtx,
+} from "./_generated/server";
 import { getUser } from "./users";
 import { fileTypes } from "./schema";
-import { Id } from "./_generated/dataModel";
-import { get } from "http";
 
 export const generateUploadUrl = mutation(async (ctx) => {
  const identity = await ctx.auth.getUserIdentity();
@@ -58,40 +62,21 @@ export const createFile = mutation({
  },
 });
 
-// export const getFiles = query({
-//  args: {
-//   orgId: v.string(),
-//  },
-//  async handler(ctx, args) {
-//   const identity = await ctx.auth.getUserIdentity();
-//   if (!identity) {
-//    return [];
-//   }
-//   const hasAccess = await hasAccessToOrg(
-//    ctx,
-//    identity.tokenIdentifier,
-//    args.orgId
-//   );
-//   if (!hasAccess) {
-//    return [];
-//   }
-//   return ctx.db
-//    .query("files")
-//    .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
-//    .collect();
-//  },
-// });
-
 export const getFiles = query({
  args: {
   orgId: v.string(),
   query: v.optional(v.string()),
   favorite: v.optional(v.boolean()),
+  deletedOnly: v.optional(v.boolean()),
  },
  async handler(ctx, args) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
    return [];
+  }
+  const user = await getUser(ctx, identity.tokenIdentifier);
+  if (!user) {
+   throw new ConvexError("user not found ");
   }
   const hasAccess = await hasAccessToOrg(
    ctx,
@@ -115,7 +100,6 @@ export const getFiles = query({
   }
 
   if (args.favorite) {
-   const user = await getUser(ctx, identity.tokenIdentifier);
    const favorites = await ctx.db
     .query("fevorites")
     .withIndex("by_userId_orgId_fileId", (q) =>
@@ -124,6 +108,11 @@ export const getFiles = query({
     .collect();
    files = files.filter((file) => favorites.some((f) => f.fileId === file._id));
   }
+  if (args.deletedOnly) {
+   files = files.filter((file) => file.shouldDelete);
+  } else {
+   files = files.filter((file) => !file.shouldDelete);
+  }
 
   const filesWithUrl = await Promise.all(
    files.map(async (file) => ({
@@ -131,6 +120,9 @@ export const getFiles = query({
     url: await ctx.storage.getUrl(file.fileId),
    }))
   );
+
+  // console.log("one", filesWithUrl[0]);
+  // console.log("two", files[0]);
 
   return filesWithUrl;
  },
@@ -177,7 +169,71 @@ export const deleteFile = mutation({
   if (!isAdmin) {
    throw new ConvexError("you must be an admin to delete a file");
   }
-  await ctx.db.delete(args.fileId);
+  await ctx.db.patch(args.fileId, {
+   shouldDelete: true,
+   updatedAt: Date.now(),
+  });
+ },
+});
+export const restoreFile = mutation({
+ args: {
+  fileId: v.id("files"),
+ },
+
+ async handler(ctx, args) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+   throw new ConvexError("you must be logged in to upload a file");
+  }
+
+  const user = await getUser(ctx, identity.tokenIdentifier);
+  if (!user) {
+   throw new ConvexError("user not found");
+  }
+  const file = await ctx.db.get(args.fileId);
+  if (!file) {
+   throw new ConvexError("file not found");
+  }
+
+  const hasAccess = await hasAccessToOrg(
+   ctx,
+   identity.tokenIdentifier,
+   file.orgId
+  );
+
+  if (!hasAccess) {
+   throw new ConvexError("you must be a member of the organization");
+  }
+
+  // this only work on orgs !!!!!
+  const isAdmin =
+   user.orgIds.find((org) => org.orgId === file.orgId)?.role === "admin" ||
+   file.orgId === identity.subject;
+  if (!isAdmin) {
+   throw new ConvexError("you must be an admin to delete a file");
+  }
+  await ctx.db.patch(args.fileId, { shouldDelete: false });
+ },
+});
+
+export const deleteAllFiles = internalMutation({
+ async handler(ctx) {
+  // const tenMinsAgo = Date.now() - 10 * 60 * 1000;
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  let files = await ctx.db
+   .query("files")
+   .withIndex("by_shouldDelete", (q) => q.eq("shouldDelete", true))
+   .filter((q) => q.lte(q.field("updatedAt"), thirtyDaysAgo))
+   .collect();
+
+  console.log(files);
+
+  await Promise.all(
+   files.map(async (file) => {
+    await ctx.storage.delete(file.fileId);
+    return await ctx.db.delete(file._id);
+   })
+  );
  },
 });
 
