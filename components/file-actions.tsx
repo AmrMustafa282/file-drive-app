@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 import { Button } from "./ui/button";
@@ -32,6 +32,7 @@ import {
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { toast } from "sonner";
 import { ConvexError } from "convex/values";
+import { Protect } from "@clerk/nextjs";
 
 export function FileCardActions({
  file,
@@ -46,6 +47,7 @@ export function FileCardActions({
  const deleteFile = useMutation(api.files.deleteFile);
  const restoreFile = useMutation(api.files.restoreFile);
  const toggleFavorite = useMutation(api.files.toggleFavorite);
+ const me = useQuery(api.users.getMe);
 
  const handleDeleteFile = async (fileId: string) => {
   const deleteFilePromise = () =>
@@ -162,71 +164,80 @@ export function FileCardActions({
      </Button>
     </DropdownMenuItem>
     <DropdownMenuItem asChild>
-     {/* <Protect role={"org:admin"} fallback={<></>}> */}
-     <AlertDialog>
-      <AlertDialogTrigger className="w-full">
-       {file.shouldDelete ? (
-        <Button
-         className="w-full justify-start gap-1 px-2  text-green-600 hover:text-green-500 "
-         variant={"ghost"}
-         size={"sm"}
-        >
-         <FolderSync className="w-4 h-4" /> <span>Restore</span>
-        </Button>
-       ) : (
-        <Button
-         className="w-full justify-start gap-1 px-2 text-red-600 hover:text-red-500 "
-         variant={"ghost"}
-         size={"sm"}
-        >
-         <Trash2 className="w-4 h-4" /> <span>Delete</span>
-        </Button>
-       )}
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-       <AlertDialogHeader>
-        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-        <AlertDialogDescription>
-         {file.shouldDelete ? (
-          <span>
-           This action will restore the file to its original location.
-          </span>
-         ) : (
-          <span>
-           This action will mark the file for deletion, you can restore it
-           within 30 days or it will be permanently deleted.
-          </span>
-         )}
-        </AlertDialogDescription>
-       </AlertDialogHeader>
-       <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction>
-         {file.shouldDelete ? (
-          <Button
-           variant={"outline"}
-           className="bg-green-600 hover:bg-green-500 text-white hover:text-white"
-           onClick={() => {
-            handleRestoreFile(file._id);
-           }}
-          >
-           Restore
-          </Button>
-         ) : (
-          <Button
-           variant="destructive"
-           onClick={() => {
-            handleDeleteFile(file._id);
-           }}
-          >
-           Delete
-          </Button>
-         )}
-        </AlertDialogAction>
-       </AlertDialogFooter>
-      </AlertDialogContent>
-     </AlertDialog>
-     {/* </Protect> */}
+     <Protect
+      condition={(check) => {
+       return (
+        check({
+         role: "org:admin",
+        }) || file.userId === me?._id
+       );
+      }}
+      fallback={<></>}
+     >
+      <AlertDialog>
+       <AlertDialogTrigger className="w-full">
+        {file.shouldDelete ? (
+         <Button
+          className="w-full justify-start gap-1 px-2  text-green-600 hover:text-green-500 "
+          variant={"ghost"}
+          size={"sm"}
+         >
+          <FolderSync className="w-4 h-4" /> <span>Restore</span>
+         </Button>
+        ) : (
+         <Button
+          className="w-full justify-start gap-1 px-2 text-red-600 hover:text-red-500 "
+          variant={"ghost"}
+          size={"sm"}
+         >
+          <Trash2 className="w-4 h-4" /> <span>Delete</span>
+         </Button>
+        )}
+       </AlertDialogTrigger>
+       <AlertDialogContent>
+        <AlertDialogHeader>
+         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+         <AlertDialogDescription>
+          {file.shouldDelete ? (
+           <span>
+            This action will restore the file to its original location.
+           </span>
+          ) : (
+           <span>
+            This action will mark the file for deletion, you can restore it
+            within 30 days or it will be permanently deleted.
+           </span>
+          )}
+         </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+         <AlertDialogCancel>Cancel</AlertDialogCancel>
+         <AlertDialogAction>
+          {file.shouldDelete ? (
+           <Button
+            variant={"outline"}
+            className="bg-green-600 hover:bg-green-500 text-white hover:text-white"
+            onClick={() => {
+             handleRestoreFile(file._id);
+            }}
+           >
+            Restore
+           </Button>
+          ) : (
+           <Button
+            variant="destructive"
+            onClick={() => {
+             handleDeleteFile(file._id);
+            }}
+           >
+            Delete
+           </Button>
+          )}
+         </AlertDialogAction>
+        </AlertDialogFooter>
+       </AlertDialogContent>
+      </AlertDialog>
+     </Protect>
     </DropdownMenuItem>
    </DropdownMenuContent>
   </DropdownMenu>

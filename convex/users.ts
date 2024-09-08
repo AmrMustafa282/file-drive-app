@@ -102,3 +102,16 @@ export const updateRoleInOrgForUser = internalMutation({
   });
  },
 });
+
+export const getMe = query({
+ args: {},
+ async handler(ctx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+   return null;
+  }
+
+  const user = await getUser(ctx, identity.tokenIdentifier);
+  return user;
+ },
+});

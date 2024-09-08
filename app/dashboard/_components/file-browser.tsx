@@ -15,6 +15,14 @@ import { columns } from "@/components/columns";
 import { Doc } from "@/convex/_generated/dataModel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Grid3X3, TableOfContents } from "lucide-react";
+import {
+ Select,
+ SelectContent,
+ SelectItem,
+ SelectTrigger,
+ SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 function PlacHolder() {
  return (
@@ -41,6 +49,7 @@ export default function FileBrowser({
  const organization = useOrganization();
  const user = useUser();
  const [query, setQuery] = useState("");
+ const [type, setType] = useState<Doc<"files">["type"] | "all">("all");
 
  let orgId: string | undefined = undefined;
  if (organization.isLoaded && user.isLoaded) {
@@ -49,7 +58,15 @@ export default function FileBrowser({
 
  const files = useQuery(
   api.files.getFiles,
-  orgId ? { orgId, query, favorite: favoritesOnly, deletedOnly } : "skip"
+  orgId
+   ? {
+      orgId,
+      type: type === "all" ? undefined : type,
+      query,
+      favorite: favoritesOnly,
+      deletedOnly,
+     }
+   : "skip"
  );
  const favorites = useQuery(
   api.files.getAllFavorites,
@@ -72,17 +89,37 @@ export default function FileBrowser({
      </div>
 
      {files?.length === 0 && <PlacHolder />}
-     <Tabs defaultValue="grid" className="col-span-4">
-      <TabsList>
-       <TabsTrigger value="grid" className="gap-1">
-        <Grid3X3 />
-        <span>Grid</span>
-       </TabsTrigger>
-       <TabsTrigger value="table" className="gap-1">
-        <TableOfContents />
-        <span>Table</span>
-       </TabsTrigger>
-      </TabsList>
+
+     <Tabs defaultValue="grid" className="col-span-4 ">
+      <div className="flex gap-4 justify-between  mb-6 ">
+       <TabsList>
+        <TabsTrigger value="grid" className="gap-1">
+         <Grid3X3 />
+         <span>Grid</span>
+        </TabsTrigger>
+        <TabsTrigger value="table" className="gap-1">
+         <TableOfContents />
+         <span>Table</span>
+        </TabsTrigger>
+       </TabsList>
+       <div className="flex gap-2 items-center">
+        <Label htmlFor="type-select">Type Filter</Label>
+        <Select
+         onValueChange={(newType) => setType(newType as any)}
+         value={type}
+        >
+         <SelectTrigger id="type-select" className="w-[180px]">
+          <SelectValue placeholder="All" />
+         </SelectTrigger>
+         <SelectContent>
+          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="image">Image</SelectItem>
+          <SelectItem value="pdf">PDF</SelectItem>
+          <SelectItem value="csv">CSV</SelectItem>
+         </SelectContent>
+        </Select>
+       </div>
+      </div>
       {isLoading && (
        <div className="flex justify-center h-[80vh] items-center">
         <Loader />
