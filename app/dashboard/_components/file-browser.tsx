@@ -89,64 +89,69 @@ export default function FileBrowser({
      </div>
 
      {files?.length === 0 && <PlacHolder />}
-
-     <Tabs defaultValue="grid" className="col-span-4 ">
-      <div className="flex gap-4 justify-between  mb-6 ">
-       <TabsList>
-        <TabsTrigger value="grid" className="gap-1">
-         <Grid3X3 />
-         <span>Grid</span>
-        </TabsTrigger>
-        <TabsTrigger value="table" className="gap-1">
-         <TableOfContents />
-         <span>Table</span>
-        </TabsTrigger>
-       </TabsList>
-       <div className="flex gap-2 items-center">
-        <Label htmlFor="type-select">Type Filter</Label>
-        <Select
-         onValueChange={(newType) => setType(newType as any)}
-         value={type}
-        >
-         <SelectTrigger id="type-select" className="w-[180px]">
-          <SelectValue placeholder="All" />
-         </SelectTrigger>
-         <SelectContent>
-          <SelectItem value="all">All</SelectItem>
-          <SelectItem value="image">Image</SelectItem>
-          <SelectItem value="pdf">PDF</SelectItem>
-          <SelectItem value="csv">CSV</SelectItem>
-         </SelectContent>
-        </Select>
+     {files?.length !== 0 && (
+      <Tabs defaultValue="grid" className="col-span-4 ">
+       <div className="flex gap-4 justify-between  mb-6 ">
+        <TabsList>
+         <TabsTrigger value="grid" className="gap-1">
+          <Grid3X3 />
+          <span>Grid</span>
+         </TabsTrigger>
+         <TabsTrigger value="table" className="gap-1">
+          <TableOfContents />
+          <span>Table</span>
+         </TabsTrigger>
+        </TabsList>
+        <div className="flex gap-2 items-center">
+         <Label htmlFor="type-select">Type Filter</Label>
+         <Select
+          onValueChange={(newType) => setType(newType as any)}
+          value={type}
+         >
+          <SelectTrigger id="type-select" className="w-[180px]">
+           <SelectValue placeholder="All" />
+          </SelectTrigger>
+          <SelectContent>
+           <SelectItem value="all">All</SelectItem>
+           <SelectItem value="image">Image</SelectItem>
+           <SelectItem value="pdf">PDF</SelectItem>
+           <SelectItem value="csv">CSV</SelectItem>
+          </SelectContent>
+         </Select>
+        </div>
        </div>
-      </div>
-      {isLoading && (
-       <div className="flex justify-center h-[80vh] items-center">
-        <Loader />
-       </div>
-      )}
-      <TabsContent value="grid">
-       <div className="grid grid-cols-4 gap-4">
-        {modifiedFiles?.map((file) => {
-         return (
-          <FileCard
-           key={file._id}
-           file={
-            file as Doc<"files"> & {
-             url: string | null;
-             user: { name: string; image: string };
-             isFavorite: boolean;
+       {isLoading && (
+        <div className="flex justify-center h-[80vh] items-center">
+         <Loader />
+        </div>
+       )}
+       <TabsContent value="grid">
+        <div className="grid grid-cols-4 gap-4">
+         {modifiedFiles?.map((file) => {
+          return (
+           <FileCard
+            key={file._id}
+            file={
+             file as Doc<"files"> & {
+              url: string | null;
+              user: { name: string; image: string };
+              isFavorite: boolean;
+             }
             }
-           }
-          />
-         );
-        })}
-       </div>
-      </TabsContent>
-      <TabsContent value="table">
-       <DataTable columns={columns} data={modifiedFiles || []} />
-      </TabsContent>
-     </Tabs>
+           />
+          );
+         })}
+        </div>
+       </TabsContent>
+       <TabsContent value="table">
+        <DataTable
+         //@ts-ignore
+         columns={columns}
+         data={modifiedFiles || []}
+        />
+       </TabsContent>
+      </Tabs>
+     )}
     </>
    </div>
   </div>
