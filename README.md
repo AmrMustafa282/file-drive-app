@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# File Drive
+
+This repository contains the source code for a file drive application. The application allows users to upload files such as images, PDFs and CSVs, create organitions or invite users to your org , upload in your personal space or your orgs , delete and restore files within 30 days if admin or in your personal space.
+
+## Key Features
+
+- **Authentication**: Sign-up, Sign-in, email verfication, forget password and more ... .
+- **Email-Feedback**: send emails to users with clerk to notify them if something happend.
+- **Organitations**: shared space with users where they can upload files there.
+- **Role-Based Authorization**: only admins who can delete and restore files in organizations.
+
+## Tech Stack
+
+- **Front-end**: Nextjs, Shadcn, Tailwind for client-side.
+- **Backend**: Convex, Clerk for rubost backend and authentication.
 
 ## Getting Started
 
-First, run the development server:
+1. **Clone the repository**:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+   git clone https://github.com/AmrMustafa282/file-drive-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Set up Environment**:Create .env and add
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- CONVEX_DEPLOYMENT
+- NEXT_PUBLIC_CONVEX_URL
+- NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+- CLERK_SECRET_KEY
+- CLERK_HOSTNAME
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+3. **Start the convex server**: `npx convex dev`
+4. **Start the development server**: `npm run dev`
+5. **Open the application**: Visit `http://localhost:3000` in your browser.
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
+Contributions are welcome! If you'd like to contribute to this project, please follow these steps:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/YourFeature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin feature/YourFeature`)
+5. Open a pull request
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
+This project is licensed under the MIT License - see the [LICENSE](MTI) file for details.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Acknowledgements
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- This project was inspired by [@Web Dev Cody](https://github.com/webdevcody) [Tutorial](https://www.youtube.com/watch?v=27hMNWcsa-Y&t=179s&ab_channel=WebDevCody) .
+- Special thanks to the contributors and maintainers of the technologies used in this project.
+
+Feel free to reach out with any questions or feedback!
+
+![](/public/readme/home.png)
+![](/public/readme/all-files.png)
+![](/public/readme/all-files-2.png)
+![](/public/readme/fev.png)
+![](/public/readme/all-org.png)
+![](/public/readme/all-org-2.png)
+![](/public/readme/account.png)
+
+```
+
+```

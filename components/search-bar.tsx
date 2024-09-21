@@ -48,7 +48,7 @@ export function SearchBar({
       control={form.control}
       name="query"
       render={({ field }) => (
-       <FormItem>
+       <FormItem className="flex-grow">
         <FormControl>
          <Input placeholder="file name" {...field} />
         </FormControl>
@@ -57,10 +57,9 @@ export function SearchBar({
       )}
      />
 
-     <Button type="submit" className="flex gap-2" size={"sm"}>
-      {/* {isSubmitting && <Spinner />} */}
+     {/* <Button type="submit" className="flex gap-2" size={"sm"}>
       <SearchIcon />
-     </Button>
+     </Button> */}
     </form>
    </Form>
   </div>
