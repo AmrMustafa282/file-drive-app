@@ -62,7 +62,3 @@ Feel free to reach out with any questions or feedback!
 ![](/public/readme/all-org.png)
 ![](/public/readme/all-org-2.png)
 ![](/public/readme/account.png)
-
-```
-
-```
